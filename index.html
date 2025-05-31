@@ -3,101 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <title>Segundo A - Colegio Santo Cristo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <style>
     html, body {
       margin: 0; padding: 0;
-      height: 100%;
-      overflow: hidden;
-      touch-action: none;
+      overflow-x: hidden;
+      -webkit-user-select: none; /* evitar selección */
       user-select: none;
-      font-family: Arial, sans-serif;
+      -webkit-touch-callout: none; /* evitar menú emergente en iOS */
+      touch-action: none; /* para evitar scroll en touch */
       background: #000;
-      color: #333;
+      font-family: Arial, sans-serif;
     }
-
+    canvas {
+      background: black;
+      display: block;
+      margin: 20px auto 0;
+      touch-action: none;
+      border: 2px solid darkblue;
+      border-radius: 10px;
+    }
     h1 {
       text-align: center;
       color: darkblue;
-      font-size: 1.8rem;
-      margin: 10px 0;
+      font-family: Arial, sans-serif;
+      margin-top: 20px;
     }
-
     p.autor {
       text-align: center;
-      font-size: 1.4rem;
+      font-family: Arial, sans-serif;
+      font-size: 28px;
       font-weight: bold;
-      margin: 10px 0 20px 0;
+      margin-top: 20px;
       color: white;
+      text-shadow: 0 0 5px #000;
     }
-
     #message {
       text-align: center;
-      font-size: 2rem;
-      color: #0f0;
+      font-size: 36px;
+      color: limegreen;
       font-weight: bold;
       display: none;
-      margin: 15px 0;
+      margin-top: 20px;
+      text-shadow: 0 0 10px limegreen;
     }
-
     #timer {
       text-align: center;
-      font-size: 1.2rem;
-      margin: 5px 0 20px 0;
+      font-size: 24px;
+      margin-top: 10px;
+      font-family: Arial, sans-serif;
       color: white;
+      text-shadow: 0 0 5px #000;
     }
-
-    #gameCanvas {
-      display: block;
-      margin: 0 auto;
-      background: black;
-      border: 2px solid #333;
-      touch-action: none;
-      width: 90vw;    /* casi todo el ancho pantalla */
-      height: 90vw;   /* canvas cuadrado */
-      max-width: 800px;
-      max-height: 800px;
-    }
-
     .controls {
       position: relative;
-      width: 180px;
-      height: 180px;
-      margin: 0 auto 30px;
+      width: 540px;
+      height: 540px;
+      margin: 20px auto 40px;
       user-select: none;
+      touch-action: none;
     }
-
     .controls button {
       position: absolute;
-      width: 60px;
-      height: 60px;
-      font-size: 32px;
+      width: 180px;
+      height: 180px;
+      font-size: 96px;
       border: none;
       background-color: #333;
       color: white;
-      border-radius: 10px;
+      border-radius: 15px;
       user-select: none;
       touch-action: manipulation;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.7);
+      transition: background-color 0.2s;
     }
-
+    .controls button:active {
+      background-color: #555;
+    }
     .controls button.up {
       top: 0;
       left: 50%;
       transform: translateX(-50%);
     }
-
     .controls button.down {
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
     }
-
     .controls button.left {
       top: 50%;
       left: 0;
       transform: translateY(-50%);
     }
-
     .controls button.right {
       top: 50%;
       right: 0;
@@ -111,32 +107,20 @@
   <p class="autor">SANTINO PEREZ RUSSO</p>
   <p id="message">¡GANASTE!</p>
   <div id="timer">Tiempo: 0s</div>
-
   <div class="controls">
-    <button class="up" onclick="setDirection(0, -1)">⬆️</button>
-    <button class="left" onclick="setDirection(-1, 0)">⬅️</button>
-    <button class="right" onclick="setDirection(1, 0)">➡️</button>
-    <button class="down" onclick="setDirection(0, 1)">⬇️</button>
+    <button class="up" onclick="setDirection(0,-1)">⬆️</button>
+    <button class="left" onclick="setDirection(-1,0)">⬅️</button>
+    <button class="right" onclick="setDirection(1,0)">➡️</button>
+    <button class="down" onclick="setDirection(0,1)">⬇️</button>
   </div>
-
   <audio id="chompSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
-
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const chompSound = document.getElementById('chompSound');
     const message = document.getElementById('message');
     const timerDisplay = document.getElementById('timer');
-    const tileSizeOriginal = 40;
-
-    // Escalar tamaño de mapa y tiles segun tamaño real canvas en pantalla
-    function getScale() {
-      return canvas.clientWidth / 800;  // 800 es tamaño original canvas width
-    }
-    let scale = getScale();
-    window.addEventListener('resize', () => {
-      scale = getScale();
-    });
+    const tileSize = 40;
 
     const map = [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -156,128 +140,4 @@
       [1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,1],
       [1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1],
       [1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1],
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    ];
-
-    const pacman = {
-      x: 1,
-      y: 1,
-      dx: 0,
-      dy: 0,
-    };
-
-    let timerStarted = false;
-    let startTime = 0;
-    let interval;
-
-    function drawMap() {
-      const tileSize = tileSizeOriginal * scale;
-      for (let row = 0; row < map.length; row++) {
-        for (let col = 0; col < map[row].length; col++) {
-          if (map[row][col] === 1) {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
-          } else if (map[row][col] === 0) {
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(
-              col * tileSize + tileSize / 2,
-              row * tileSize + tileSize / 2,
-              5 * scale,
-              0,
-              2 * Math.PI
-            );
-            ctx.fill();
-          }
-        }
-      }
-    }
-
-    function drawPacman() {
-      const tileSize = tileSizeOriginal * scale;
-      ctx.fillStyle = 'yellow';
-      ctx.beginPath();
-      ctx.arc(
-        pacman.x * tileSize + tileSize / 2,
-        pacman.y * tileSize + tileSize / 2,
-        tileSize / 2 - 2 * scale,
-        0.25 * Math.PI,
-        1.75 * Math.PI
-      );
-      ctx.lineTo(pacman.x * tileSize + tileSize / 2, pacman.y * tileSize + tileSize / 2);
-      ctx.fill();
-    }
-
-    function clear() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    function movePacman() {
-      const newX = pacman.x + pacman.dx;
-      const newY = pacman.y + pacman.dy;
-      if (
-        newY >= 0 && newY < map.length &&
-        newX >= 0 && newX < map[0].length &&
-        map[newY][newX] !== 1
-      ) {
-        pacman.x = newX;
-        pacman.y = newY;
-        if (map[pacman.y][pacman.x] === 0) {
-          map[pacman.y][pacman.x] = 2;
-          chompSound.currentTime = 0;
-          chompSound.play();
-          if (!timerStarted) {
-            timerStarted = true;
-            startTime = Date.now();
-            interval = setInterval(() => {
-              const seconds = Math.floor((Date.now() - startTime) / 1000);
-              timerDisplay.textContent = `Tiempo: ${seconds}s`;
-            }, 1000);
-          }
-          checkWin();
-        }
-      }
-    }
-
-    function checkWin() {
-      for (let row of map) {
-        if (row.includes(0)) return;
-      }
-      message.style.display = 'block';
-      clearInterval(interval);
-    }
-
-    function gameLoop() {
-      clear();
-      drawMap();
-      drawPacman();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function setDirection(dx, dy) {
-      pacman.dx = dx;
-      pacman.dy = dy;
-      movePacman();
-    }
-
-    // Evitar scroll y mover pantalla arrastrando fuera de botones
-    document.addEventListener('touchmove', function(e) {
-      if (!e.target.closest('.controls')) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    // Control con teclado
-    document.addEventListener('keydown', (e) => {
-      switch (e.key) {
-        case 'ArrowUp': setDirection(0, -1); break;
-        case 'ArrowDown': setDirection(0, 1); break;
-        case 'ArrowLeft': setDirection(-1, 0); break;
-        case 'ArrowRight': setDirection(1, 0); break;
-      }
-    });
-
-    gameLoop();
-  </script>
-</body>
-</html>
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]()
