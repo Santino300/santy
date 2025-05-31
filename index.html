@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Segundo A - Colegio Santo Cristo</title>
   <style>
     canvas {
       background: black;
       display: block;
       margin: 0 auto;
+      touch-action: none;
     }
     h1 {
       text-align: center;
@@ -28,12 +29,27 @@
       font-weight: bold;
       display: none;
     }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .controls button {
+      padding: 20px 30px;
+      font-size: 28px;
+      border: none;
+      background-color: #333;
+      color: white;
+      border-radius: 10px;
+      user-select: none;
+    }
     #timer {
       text-align: center;
       font-size: 24px;
-      color: red;
-      font-weight: bold;
       margin-top: 10px;
+      font-family: Arial, sans-serif;
+      color: #333;
     }
   </style>
 </head>
@@ -41,8 +57,14 @@
   <h1>Segundo A - Colegio Santo Cristo</h1>
   <canvas id="gameCanvas" width="800" height="800"></canvas>
   <p class="autor">SANTINO PEREZ RUSSO</p>
-  <p id="timer">Tiempo: 0 segundos</p>
   <p id="message">¡GANASTE!</p>
+  <div id="timer">Tiempo: 0s</div>
+  <div class="controls">
+    <button onclick="setDirection(0,-1)">⬆️</button>
+    <button onclick="setDirection(-1,0)">⬅️</button>
+    <button onclick="setDirection(1,0)">➡️</button>
+    <button onclick="setDirection(0,1)">⬇️</button>
+  </div>
   <audio id="chompSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -90,7 +112,7 @@
         startTime = Date.now();
         timerInterval = setInterval(() => {
           const seconds = Math.floor((Date.now() - startTime) / 1000);
-          timerDisplay.textContent = `Tiempo: ${seconds} segundos`;
+          timerDisplay.textContent = `Tiempo: ${seconds}s`;
         }, 1000);
       }
     }
@@ -104,7 +126,7 @@
           } else if (map[row][col] === 0) {
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(col * tileSize + tileSize/2, row * tileSize + tileSize/2, 5, 0, 2 * Math.PI);
+            ctx.arc(col * tileSize + tileSize / 2, row * tileSize + tileSize / 2, 6, 0, 2 * Math.PI);
             ctx.fill();
           }
         }
@@ -132,6 +154,7 @@
     function movePacman() {
       const newX = pacman.x + pacman.dx;
       const newY = pacman.y + pacman.dy;
+
       if (
         newY >= 0 && newY < map.length &&
         newX >= 0 && newX < map[0].length &&
@@ -139,6 +162,7 @@
       ) {
         pacman.x = newX;
         pacman.y = newY;
+
         if (map[pacman.y][pacman.x] === 0) {
           map[pacman.y][pacman.x] = 2;
           chompSound.currentTime = 0;
@@ -150,7 +174,7 @@
     }
 
     function checkWin() {
-      for (let row of map) {
+      for (const row of map) {
         if (row.includes(0)) return;
       }
       message.style.display = 'block';
@@ -164,15 +188,30 @@
       requestAnimationFrame(gameLoop);
     }
 
+    function setDirection(dx, dy) {
+      pacman.dx = dx;
+      pacman.dy = dy;
+      movePacman();
+    }
+
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
-        case 'ArrowUp': pacman.dx = 0; pacman.dy = -1; break;
-        case 'ArrowDown': pacman.dx = 0; pacman.dy = 1; break;
-        case 'ArrowLeft': pacman.dx = -1; pacman.dy = 0; break;
-        case 'ArrowRight': pacman.dx = 1; pacman.dy = 0; break;
+        case 'ArrowUp':
+          setDirection(0, -1);
+          break;
+        case 'ArrowDown':
+          setDirection(0, 1);
+          break;
+        case 'ArrowLeft':
+          setDirection(-1, 0);
+          break;
+        case 'ArrowRight':
+          setDirection(1, 0);
+          break;
       }
-      movePacman();
     });
+
+    // Controles táctiles (botones grandes ya definidos)
 
     gameLoop();
   </script>
