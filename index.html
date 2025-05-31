@@ -29,27 +29,47 @@
       font-weight: bold;
       display: none;
     }
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .controls button {
-      padding: 20px 30px;
-      font-size: 28px;
-      border: none;
-      background-color: #333;
-      color: white;
-      border-radius: 10px;
-      user-select: none;
-    }
     #timer {
       text-align: center;
       font-size: 24px;
       margin-top: 10px;
       font-family: Arial, sans-serif;
       color: #333;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px 60px;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      user-select: none;
+    }
+    .controls button {
+      padding: 0;
+      font-size: 32px;
+      width: 60px;
+      height: 60px;
+      border: none;
+      background-color: #333;
+      color: white;
+      border-radius: 10px;
+    }
+    .up {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    .right {
+      grid-column: 3;
+      grid-row: 2;
+    }
+    .down {
+      grid-column: 2;
+      grid-row: 3;
     }
   </style>
 </head>
@@ -60,10 +80,10 @@
   <p id="message">¡GANASTE!</p>
   <div id="timer">Tiempo: 0s</div>
   <div class="controls">
-    <button onclick="setDirection(0,-1)">⬆️</button>
-    <button onclick="setDirection(-1,0)">⬅️</button>
-    <button onclick="setDirection(1,0)">➡️</button>
-    <button onclick="setDirection(0,1)">⬇️</button>
+    <button class="up" onclick="setDirection(0,-1)">⬆️</button>
+    <button class="left" onclick="setDirection(-1,0)">⬅️</button>
+    <button class="right" onclick="setDirection(1,0)">➡️</button>
+    <button class="down" onclick="setDirection(0,1)">⬇️</button>
   </div>
   <audio id="chompSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
   <script>
@@ -126,7 +146,7 @@
           } else if (map[row][col] === 0) {
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(col * tileSize + tileSize / 2, row * tileSize + tileSize / 2, 6, 0, 2 * Math.PI);
+            ctx.arc(col * tileSize + tileSize / 2, row * tileSize + tileSize / 2, 5, 0, 2 * Math.PI);
             ctx.fill();
           }
         }
@@ -154,7 +174,6 @@
     function movePacman() {
       const newX = pacman.x + pacman.dx;
       const newY = pacman.y + pacman.dy;
-
       if (
         newY >= 0 && newY < map.length &&
         newX >= 0 && newX < map[0].length &&
@@ -162,7 +181,6 @@
       ) {
         pacman.x = newX;
         pacman.y = newY;
-
         if (map[pacman.y][pacman.x] === 0) {
           map[pacman.y][pacman.x] = 2;
           chompSound.currentTime = 0;
@@ -174,7 +192,7 @@
     }
 
     function checkWin() {
-      for (const row of map) {
+      for (let row of map) {
         if (row.includes(0)) return;
       }
       message.style.display = 'block';
@@ -196,22 +214,12 @@
 
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
-        case 'ArrowUp':
-          setDirection(0, -1);
-          break;
-        case 'ArrowDown':
-          setDirection(0, 1);
-          break;
-        case 'ArrowLeft':
-          setDirection(-1, 0);
-          break;
-        case 'ArrowRight':
-          setDirection(1, 0);
-          break;
+        case 'ArrowUp': setDirection(0, -1); break;
+        case 'ArrowDown': setDirection(0, 1); break;
+        case 'ArrowLeft': setDirection(-1, 0); break;
+        case 'ArrowRight': setDirection(1, 0); break;
       }
     });
-
-    // Controles táctiles (botones grandes ya definidos)
 
     gameLoop();
   </script>
