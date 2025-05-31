@@ -3,64 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <title>Segundo A - Colegio Santo Cristo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <style>
-    /* Evitar scroll y selección en móvil */
     html, body {
+      margin: 0; padding: 0;
+      height: 100%;
       overflow: hidden;
       touch-action: none;
-      -ms-touch-action: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-
-    canvas {
-      background: black;
-      display: block;
-      margin: 0 auto;
-      touch-action: none;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #333;
     }
 
     h1 {
       text-align: center;
       color: darkblue;
-      font-family: Arial, sans-serif;
+      font-size: 1.8rem;
+      margin: 10px 0;
     }
 
     p.autor {
       text-align: center;
-      font-family: Arial, sans-serif;
-      font-size: 28px;
+      font-size: 1.4rem;
       font-weight: bold;
-      margin-top: 20px;
+      margin: 10px 0 20px 0;
+      color: white;
     }
 
     #message {
       text-align: center;
-      font-size: 36px;
-      color: green;
+      font-size: 2rem;
+      color: #0f0;
       font-weight: bold;
       display: none;
+      margin: 15px 0;
     }
 
     #timer {
       text-align: center;
-      font-size: 24px;
-      margin-top: 10px;
-      font-family: Arial, sans-serif;
-      color: #333;
+      font-size: 1.2rem;
+      margin: 5px 0 20px 0;
+      color: white;
     }
 
-    /* Contenedor para los botones en forma de cruz */
+    #gameCanvas {
+      display: block;
+      margin: 0 auto;
+      background: black;
+      border: 2px solid #333;
+      touch-action: none;
+      width: 90vw;    /* casi todo el ancho pantalla */
+      height: 90vw;   /* canvas cuadrado */
+      max-width: 800px;
+      max-height: 800px;
+    }
+
     .controls {
       position: relative;
-      width: 160px;
-      height: 160px;
-      margin: 20px auto 0;
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 30px;
+      user-select: none;
     }
 
     .controls button {
@@ -73,9 +77,9 @@
       color: white;
       border-radius: 10px;
       user-select: none;
+      touch-action: manipulation;
     }
 
-    /* Posiciones para formar la cruz */
     .controls button.up {
       top: 0;
       left: 50%;
@@ -123,7 +127,16 @@
     const chompSound = document.getElementById('chompSound');
     const message = document.getElementById('message');
     const timerDisplay = document.getElementById('timer');
-    const tileSize = 40;
+    const tileSizeOriginal = 40;
+
+    // Escalar tamaño de mapa y tiles segun tamaño real canvas en pantalla
+    function getScale() {
+      return canvas.clientWidth / 800;  // 800 es tamaño original canvas width
+    }
+    let scale = getScale();
+    window.addEventListener('resize', () => {
+      scale = getScale();
+    });
 
     const map = [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -158,6 +171,7 @@
     let interval;
 
     function drawMap() {
+      const tileSize = tileSizeOriginal * scale;
       for (let row = 0; row < map.length; row++) {
         for (let col = 0; col < map[row].length; col++) {
           if (map[row][col] === 1) {
@@ -166,7 +180,13 @@
           } else if (map[row][col] === 0) {
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(col * tileSize + tileSize / 2, row * tileSize + tileSize / 2, 5, 0, 2 * Math.PI);
+            ctx.arc(
+              col * tileSize + tileSize / 2,
+              row * tileSize + tileSize / 2,
+              5 * scale,
+              0,
+              2 * Math.PI
+            );
             ctx.fill();
           }
         }
@@ -174,12 +194,13 @@
     }
 
     function drawPacman() {
+      const tileSize = tileSizeOriginal * scale;
       ctx.fillStyle = 'yellow';
       ctx.beginPath();
       ctx.arc(
         pacman.x * tileSize + tileSize / 2,
         pacman.y * tileSize + tileSize / 2,
-        tileSize / 2 - 2,
+        tileSize / 2 - 2 * scale,
         0.25 * Math.PI,
         1.75 * Math.PI
       );
@@ -239,7 +260,7 @@
       movePacman();
     }
 
-    // Evitar scroll al tocar fuera de botones
+    // Evitar scroll y mover pantalla arrastrando fuera de botones
     document.addEventListener('touchmove', function(e) {
       if (!e.target.closest('.controls')) {
         e.preventDefault();
