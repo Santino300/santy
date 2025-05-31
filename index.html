@@ -4,17 +4,33 @@
   <meta charset="UTF-8" />
   <title>Segundo A - Colegio Santo Cristo</title>
   <style>
+    /* Evitar scroll y selección en móvil */
+    html, body {
+      overflow: hidden;
+      touch-action: none;
+      -ms-touch-action: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
     canvas {
       background: black;
       display: block;
       margin: 0 auto;
       touch-action: none;
     }
+
     h1 {
       text-align: center;
       color: darkblue;
       font-family: Arial, sans-serif;
     }
+
     p.autor {
       text-align: center;
       font-family: Arial, sans-serif;
@@ -22,6 +38,7 @@
       font-weight: bold;
       margin-top: 20px;
     }
+
     #message {
       text-align: center;
       font-size: 36px;
@@ -29,6 +46,7 @@
       font-weight: bold;
       display: none;
     }
+
     #timer {
       text-align: center;
       font-size: 24px;
@@ -36,40 +54,50 @@
       font-family: Arial, sans-serif;
       color: #333;
     }
+
+    /* Contenedor para los botones en forma de cruz */
     .controls {
-      display: grid;
-      grid-template-columns: 60px 60px 60px;
-      grid-template-rows: 60px 60px 60px;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-      user-select: none;
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 20px auto 0;
     }
+
     .controls button {
-      padding: 0;
-      font-size: 32px;
+      position: absolute;
       width: 60px;
       height: 60px;
+      font-size: 32px;
       border: none;
       background-color: #333;
       color: white;
       border-radius: 10px;
+      user-select: none;
     }
-    .up {
-      grid-column: 2;
-      grid-row: 1;
+
+    /* Posiciones para formar la cruz */
+    .controls button.up {
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
     }
-    .left {
-      grid-column: 1;
-      grid-row: 2;
+
+    .controls button.down {
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
     }
-    .right {
-      grid-column: 3;
-      grid-row: 2;
+
+    .controls button.left {
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
     }
-    .down {
-      grid-column: 2;
-      grid-row: 3;
+
+    .controls button.right {
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
     }
   </style>
 </head>
@@ -79,13 +107,16 @@
   <p class="autor">SANTINO PEREZ RUSSO</p>
   <p id="message">¡GANASTE!</p>
   <div id="timer">Tiempo: 0s</div>
+
   <div class="controls">
-    <button class="up" onclick="setDirection(0,-1)">⬆️</button>
-    <button class="left" onclick="setDirection(-1,0)">⬅️</button>
-    <button class="right" onclick="setDirection(1,0)">➡️</button>
-    <button class="down" onclick="setDirection(0,1)">⬇️</button>
+    <button class="up" onclick="setDirection(0, -1)">⬆️</button>
+    <button class="left" onclick="setDirection(-1, 0)">⬅️</button>
+    <button class="right" onclick="setDirection(1, 0)">➡️</button>
+    <button class="down" onclick="setDirection(0, 1)">⬇️</button>
   </div>
+
   <audio id="chompSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -124,18 +155,7 @@
 
     let timerStarted = false;
     let startTime = 0;
-    let timerInterval;
-
-    function startTimer() {
-      if (!timerStarted) {
-        timerStarted = true;
-        startTime = Date.now();
-        timerInterval = setInterval(() => {
-          const seconds = Math.floor((Date.now() - startTime) / 1000);
-          timerDisplay.textContent = `Tiempo: ${seconds}s`;
-        }, 1000);
-      }
-    }
+    let interval;
 
     function drawMap() {
       for (let row = 0; row < map.length; row++) {
@@ -185,7 +205,14 @@
           map[pacman.y][pacman.x] = 2;
           chompSound.currentTime = 0;
           chompSound.play();
-          startTimer();
+          if (!timerStarted) {
+            timerStarted = true;
+            startTime = Date.now();
+            interval = setInterval(() => {
+              const seconds = Math.floor((Date.now() - startTime) / 1000);
+              timerDisplay.textContent = `Tiempo: ${seconds}s`;
+            }, 1000);
+          }
           checkWin();
         }
       }
@@ -196,7 +223,7 @@
         if (row.includes(0)) return;
       }
       message.style.display = 'block';
-      clearInterval(timerInterval);
+      clearInterval(interval);
     }
 
     function gameLoop() {
@@ -212,6 +239,14 @@
       movePacman();
     }
 
+    // Evitar scroll al tocar fuera de botones
+    document.addEventListener('touchmove', function(e) {
+      if (!e.target.closest('.controls')) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Control con teclado
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
         case 'ArrowUp': setDirection(0, -1); break;
