@@ -2,67 +2,47 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Segundo A - Colegio Santo Cristo</title>
+  <title>Pacman - Santino</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    canvas {
+    html, body {
+      margin: 0;
+      padding: 0;
       background: black;
-      display: block;
-      margin: 0 auto;
+      overflow: hidden;
       touch-action: none;
     }
-    h1 {
+    h1, .autor, #message, #timer {
       text-align: center;
-      color: darkblue;
+      color: white;
       font-family: Arial, sans-serif;
     }
-    p.autor {
-      text-align: center;
-      font-family: Arial, sans-serif;
-      font-size: 28px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-    #message {
-      text-align: center;
-      font-size: 36px;
-      color: green;
-      font-weight: bold;
-      display: none;
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: black;
+      touch-action: none;
+      width: 100vw;
+      height: 100vw;
+      max-width: 800px;
+      max-height: 800px;
     }
     .controls {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
-      margin-top: 20px;
-      flex-wrap: wrap;
+      margin-top: 10px;
+      padding: 10px;
     }
     .controls button {
-      padding: 30px 40px;
-      font-size: 32px;
+      padding: 40px;
+      font-size: 40px;
       border: none;
       background-color: #333;
       color: white;
-      border-radius: 10px;
+      border-radius: 20px;
       flex: 1 1 40%;
-    }
-    #timer {
-      text-align: center;
-      font-size: 24px;
-      margin-top: 10px;
-      font-family: Arial, sans-serif;
-      color: #333;
-    }
-    #restart {
-      display: block;
-      margin: 20px auto;
-      padding: 20px 40px;
-      font-size: 28px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      display: none;
     }
   </style>
 </head>
@@ -70,9 +50,8 @@
   <h1>Segundo A - Colegio Santo Cristo</h1>
   <canvas id="gameCanvas" width="800" height="800"></canvas>
   <p class="autor">SANTINO PEREZ RUSSO</p>
-  <p id="message">¡GANASTE!</p>
+  <p id="message" style="display:none; font-size: 32px;">¡GANASTE!</p>
   <div id="timer">Tiempo: 0s</div>
-  <button id="restart" onclick="restartGame()">Reiniciar</button>
   <div class="controls">
     <button onclick="setDirection(0,-1)">⬆️</button>
     <button onclick="setDirection(-1,0)">⬅️</button>
@@ -86,10 +65,9 @@
     const chompSound = document.getElementById('chompSound');
     const message = document.getElementById('message');
     const timerDisplay = document.getElementById('timer');
-    const restartButton = document.getElementById('restart');
     const tileSize = 40;
 
-    const initialMap = [
+    const map = [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
       [1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1],
@@ -110,9 +88,7 @@
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ];
 
-    let map = JSON.parse(JSON.stringify(initialMap));
     const pacman = { x: 1, y: 1 };
-
     let timerStarted = false;
     let startTime = 0;
     let interval;
@@ -141,7 +117,7 @@
       ctx.fill();
     }
 
-    function clear() {
+    function clearCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -150,7 +126,6 @@
         map[y][x] = 2;
         chompSound.currentTime = 0;
         chompSound.play();
-
         if (!timerStarted) {
           timerStarted = true;
           startTime = Date.now();
@@ -159,4 +134,36 @@
             timerDisplay.textContent = `Tiempo: ${seconds}s`;
           }, 1000);
         }
-        checkWin(
+        checkWin();
+      }
+    }
+
+    function checkWin() {
+      for (let row of map) {
+        if (row.includes(0)) return;
+      }
+      message.style.display = 'block';
+      clearInterval(interval);
+    }
+
+    function gameLoop() {
+      clearCanvas();
+      drawMap();
+      drawPacman();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function setDirection(dx, dy) {
+      const newX = pacman.x + dx;
+      const newY = pacman.y + dy;
+      if (newY >= 0 && newY < map.length && newX >= 0 && newX < map[0].length && map[newY][newX] !== 1) {
+        pacman.x = newX;
+        pacman.y = newY;
+        eatDot(newX, newY);
+      }
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
