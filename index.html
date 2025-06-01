@@ -1,79 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Segundo A - Colegio Santo Cristo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
       text-align: center;
     }
 
-    h1 {
-      color: #003366;
-      font-size: 22px;
-      margin: 10px 0;
-    }
-
-    .autor {
-      font-weight: bold;
-      font-size: 18px;
-      margin-top: 5px;
-      color: #222;
-    }
-
-    #gameCanvas {
+    canvas {
       background: black;
       width: 100%;
       max-width: 800px;
       height: auto;
       display: block;
       margin: 0 auto;
-      border: 4px solid #333;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
       touch-action: none;
     }
 
-    #message {
-      font-size: 26px;
-      color: green;
+    h1 {
+      color: darkblue;
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    p.autor {
+      font-size: 20px;
       font-weight: bold;
-      display: none;
       margin-top: 10px;
     }
 
+    #message {
+      font-size: 28px;
+      color: green;
+      font-weight: bold;
+      display: none;
+    }
+
     #timer {
-      font-size: 18px;
+      font-size: 20px;
       color: red;
-      margin: 10px;
+      font-weight: bold;
+      margin: 10px 0;
     }
 
     .controls {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 60px 60px;
+      grid-template-rows: repeat(2, 60px);
       gap: 10px;
-      margin: 20px auto;
       max-width: 300px;
+      margin: 20px auto;
     }
 
     .controls button {
-      font-size: 24px;
-      background: #4CAF50;
-      color: white;
+      font-size: 20px;
+      padding: 10px;
       border: none;
-      border-radius: 12px;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .controls button:hover {
-      background: #45a049;
+      background: #3498db;
+      color: white;
+      border-radius: 10px;
     }
 
     .controls .spacer {
@@ -98,7 +88,7 @@
   </div>
 
   <audio id="chompSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
-
+  
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -107,8 +97,27 @@
     const timerDisplay = document.getElementById('timer');
     const tileSize = 40;
 
-    const map = [/* ... mismo arreglo que antes ... */];
-    
+    const map = [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1],
+      [1,0,1,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1],
+      [1,0,1,0,1,1,0,0,0,0,0,1,1,1,0,1,0,1,0,1],
+      [1,0,1,0,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1],
+      [1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,1],
+      [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+      [1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+      [1,0,1,0,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1],
+      [1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,1],
+      [1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1],
+      [1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
     const pacman = { x: 1, y: 1, dx: 0, dy: 0 };
     let timerStarted = false;
     let startTime = 0;
@@ -187,17 +196,10 @@
       clearInterval(timerInterval);
     }
 
-    function vibrate(ms) {
-      if (navigator.vibrate) {
-        navigator.vibrate(ms);
-      }
-    }
-
     function setDirection(dx, dy) {
       pacman.dx = dx;
       pacman.dy = dy;
       movePacman();
-      vibrate(50); // vibra al tocar
     }
 
     function gameLoop() {
@@ -207,6 +209,7 @@
       requestAnimationFrame(gameLoop);
     }
 
+    // También mantiene compatibilidad con teclado
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
         case 'ArrowUp': setDirection(0, -1); break;
