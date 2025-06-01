@@ -2,47 +2,72 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Pacman - Santino</title>
+  <title>Segundo A - Colegio Santo Cristo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      background: black;
-      overflow: hidden;
-      touch-action: none;
-    }
-    h1, .autor, #message, #timer {
-      text-align: center;
-      color: white;
       font-family: Arial, sans-serif;
+      text-align: center;
     }
+
     canvas {
+      background: black;
+      width: 100%;
+      max-width: 800px;
+      height: auto;
       display: block;
       margin: 0 auto;
-      background: black;
       touch-action: none;
-      width: 100vw;
-      height: 100vw;
-      max-width: 800px;
-      max-height: 800px;
     }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
+
+    h1 {
+      color: darkblue;
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    p.autor {
+      font-size: 20px;
+      font-weight: bold;
       margin-top: 10px;
-      padding: 10px;
     }
+
+    #message {
+      font-size: 28px;
+      color: green;
+      font-weight: bold;
+      display: none;
+    }
+
+    #timer {
+      font-size: 20px;
+      color: red;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: repeat(2, 60px);
+      gap: 10px;
+      max-width: 300px;
+      margin: 20px auto;
+    }
+
     .controls button {
-      padding: 40px;
-      font-size: 40px;
+      font-size: 20px;
+      padding: 10px;
       border: none;
-      background-color: #333;
+      background: #3498db;
       color: white;
-      border-radius: 20px;
-      flex: 1 1 40%;
+      border-radius: 10px;
+    }
+
+    .controls .spacer {
+      visibility: hidden;
     }
   </style>
 </head>
@@ -50,15 +75,20 @@
   <h1>Segundo A - Colegio Santo Cristo</h1>
   <canvas id="gameCanvas" width="800" height="800"></canvas>
   <p class="autor">SANTINO PEREZ RUSSO</p>
-  <p id="message" style="display:none; font-size: 32px;">¡GANASTE!</p>
-  <div id="timer">Tiempo: 0s</div>
+  <p id="timer">Tiempo: 0 segundos</p>
+  <p id="message">¡GANASTE!</p>
+
   <div class="controls">
-    <button onclick="setDirection(0,-1)">⬆️</button>
-    <button onclick="setDirection(-1,0)">⬅️</button>
-    <button onclick="setDirection(1,0)">➡️</button>
-    <button onclick="setDirection(0,1)">⬇️</button>
+    <div class="spacer"></div>
+    <button onclick="setDirection(0, -1)">⬆️</button>
+    <div class="spacer"></div>
+    <button onclick="setDirection(-1, 0)">⬅️</button>
+    <button onclick="setDirection(0, 1)">⬇️</button>
+    <button onclick="setDirection(1, 0)">➡️</button>
   </div>
+
   <audio id="chompSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+  
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -88,10 +118,21 @@
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ];
 
-    const pacman = { x: 1, y: 1 };
+    const pacman = { x: 1, y: 1, dx: 0, dy: 0 };
     let timerStarted = false;
     let startTime = 0;
-    let interval;
+    let timerInterval;
+
+    function startTimer() {
+      if (!timerStarted) {
+        timerStarted = true;
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+          const seconds = Math.floor((Date.now() - startTime) / 1000);
+          timerDisplay.textContent = `Tiempo: ${seconds} segundos`;
+        }, 1000);
+      }
+    }
 
     function drawMap() {
       for (let row = 0; row < map.length; row++) {
@@ -102,7 +143,7 @@
           } else if (map[row][col] === 0) {
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(col * tileSize + tileSize/2, row * tileSize + tileSize/2, 5, 0, 2 * Math.PI);
+            ctx.arc(col * tileSize + tileSize / 2, row * tileSize + tileSize / 2, 5, 0, 2 * Math.PI);
             ctx.fill();
           }
         }
@@ -112,29 +153,38 @@
     function drawPacman() {
       ctx.fillStyle = 'yellow';
       ctx.beginPath();
-      ctx.arc(pacman.x * tileSize + tileSize / 2, pacman.y * tileSize + tileSize / 2, tileSize / 2 - 2, 0.25 * Math.PI, 1.75 * Math.PI);
+      ctx.arc(
+        pacman.x * tileSize + tileSize / 2,
+        pacman.y * tileSize + tileSize / 2,
+        tileSize / 2 - 2,
+        0.25 * Math.PI,
+        1.75 * Math.PI
+      );
       ctx.lineTo(pacman.x * tileSize + tileSize / 2, pacman.y * tileSize + tileSize / 2);
       ctx.fill();
     }
 
-    function clearCanvas() {
+    function clear() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    function eatDot(x, y) {
-      if (map[y][x] === 0) {
-        map[y][x] = 2;
-        chompSound.currentTime = 0;
-        chompSound.play();
-        if (!timerStarted) {
-          timerStarted = true;
-          startTime = Date.now();
-          interval = setInterval(() => {
-            const seconds = Math.floor((Date.now() - startTime) / 1000);
-            timerDisplay.textContent = `Tiempo: ${seconds}s`;
-          }, 1000);
+    function movePacman() {
+      const newX = pacman.x + pacman.dx;
+      const newY = pacman.y + pacman.dy;
+      if (
+        newY >= 0 && newY < map.length &&
+        newX >= 0 && newX < map[0].length &&
+        map[newY][newX] !== 1
+      ) {
+        pacman.x = newX;
+        pacman.y = newY;
+        if (map[pacman.y][pacman.x] === 0) {
+          map[pacman.y][pacman.x] = 2;
+          chompSound.currentTime = 0;
+          chompSound.play();
+          startTimer();
+          checkWin();
         }
-        checkWin();
       }
     }
 
@@ -143,25 +193,31 @@
         if (row.includes(0)) return;
       }
       message.style.display = 'block';
-      clearInterval(interval);
+      clearInterval(timerInterval);
+    }
+
+    function setDirection(dx, dy) {
+      pacman.dx = dx;
+      pacman.dy = dy;
+      movePacman();
     }
 
     function gameLoop() {
-      clearCanvas();
+      clear();
       drawMap();
       drawPacman();
       requestAnimationFrame(gameLoop);
     }
 
-    function setDirection(dx, dy) {
-      const newX = pacman.x + dx;
-      const newY = pacman.y + dy;
-      if (newY >= 0 && newY < map.length && newX >= 0 && newX < map[0].length && map[newY][newX] !== 1) {
-        pacman.x = newX;
-        pacman.y = newY;
-        eatDot(newX, newY);
+    // También mantiene compatibilidad con teclado
+    document.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowUp': setDirection(0, -1); break;
+        case 'ArrowDown': setDirection(0, 1); break;
+        case 'ArrowLeft': setDirection(-1, 0); break;
+        case 'ArrowRight': setDirection(1, 0); break;
       }
-    }
+    });
 
     gameLoop();
   </script>
