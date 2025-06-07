@@ -32,6 +32,7 @@
       font-size: 20px;
       font-weight: bold;
       margin-top: 10px;
+      white-space: pre-line;
     }
 
     #message {
@@ -74,7 +75,14 @@
 <body>
   <h1>Segundo A - Colegio Santo Cristo</h1>
   <canvas id="gameCanvas" width="800" height="800"></canvas>
-  <p class="autor">SANTINO PEREZ RUSSO</p>
+  
+  <p class="autor">
+    SANTINO PEREZ RUSSO<br>
+    WILLIAM RODRÍGUEZ<br>
+    JONAS PAZ<br>
+    NAHUEL YAPURA
+  </p>
+  
   <p id="timer">Tiempo: 0 segundos</p>
   <p id="message">¡GANASTE!</p>
 
@@ -209,7 +217,6 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // También mantiene compatibilidad con teclado
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
         case 'ArrowUp': setDirection(0, -1); break;
@@ -223,3 +230,4 @@
   </script>
 </body>
 </html>
+
